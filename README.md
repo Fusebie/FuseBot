@@ -1,0 +1,2 @@
+# FuseBot
+ the discord bot 
