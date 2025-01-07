@@ -15,6 +15,7 @@ load_dotenv()
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='/', intents=intents)
 
+# for music
 queues = {}
 voice_clients = {}
 yt_dl_options = {"format": "bestaudio/best"}
