@@ -15,17 +15,22 @@ load_dotenv()
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='/', intents=intents)
 
+# GLOBAL VARIABLES
+
 # for music
 queues = {}
 voice_clients = {}
 yt_dl_options = {"format": "bestaudio/best"}
 ytdl = yt_dlp.YoutubeDL(yt_dl_options)
-
 ffmpeg_options = {'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5','options': '-vn -filter:a "volume=0.25"'}
 
-# GLOBAL VARIABLES
+# sleepy stuf
 people_sleeping_cache = []
 answers = ["yes", "no"]
+
+# other
+emojis = ["<:hello3:1326319373064994938>", "<:gato:1326319173009145949>", "<:catwithglasses:1326319138070597642>", "<:sillycat:1326319037688320054>"]
+
 
 @bot.event
 async def on_ready():
@@ -51,7 +56,10 @@ async def on_message(message=discord.message.Message):
     
     if message.content.startswith('fusebot help'):
         await message.channel.send('hi im fusebot :D')
-	
+        await message.channel.send('command list:')
+        await message.channel.send('music: ?join, ?play, ?pause, ?resume, ?stop, ?leave')
+        await message.channel.send('other: "walter", "fusebot im sleeping", "cat"')
+    
 	#region sleepy stuff
 
     if message.content.startswith('fusebot im sleeping'):
@@ -130,16 +138,35 @@ async def on_message(message=discord.message.Message):
         except Exception as e:
             print(e)
 
-    if message.content.startswith("?leave") or message.content.startswith("?disconnect"):
-        await message.channel.send("leaving vc, byebye")
-        await voice_clients[message.guild.id].disconnect()
+    if message.content.startswith("?join"):
+        try:
+            voice_client = await message.author.voice.channel.connect()
+            voice_clients[voice_client.guild.id] = voice_client
+            await message.channel.send("hello :D")
+            await message.channel.send(emojis[0])
+            await message.author.voice.channel.connect()
+        except Exception as e:
+            print(e)
+
+    if message.content.startswith("?leave"):
+        try:    
+            await voice_clients[message.guild.id].disconnect()
+            await message.channel.send("leaving vc, byebye")
+        except Exception as e:
+            print(e)
 
     #endregion
 
 	# other random stuff
     
-	#ping baka
+    if message.content.__contains__('walter'):
+        await message.channel.send("https://tenor.com/view/walter-white-breaking-bad-meme-memes-funny-gif-23338269")
+    
+    if message.content.startswith('cat'):
+        i = random.randint(0, len(emojis) - 1)
+        await message.channel.send(emojis[i])
 
+	#ping people
     if message.content.startswith('fusebot ping baka'):
         i = 0
         while i != 20:
