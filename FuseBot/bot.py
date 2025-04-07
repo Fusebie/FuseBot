@@ -49,11 +49,86 @@ async def ping(ctx: commands.Context):
 async def skibidi(ctx: commands.Context):
     await ctx.send('toilet')
 
+#region Music Playing
+
+@bot.hybrid_command()
+async def play(ctx: commands.Context, url):
+    try:
+        voice_client = await ctx.author.voice.channel.connect()
+        voice_clients[voice_client.guild.id] = voice_client
+
+    except Exception as e:
+        print(e)
+        
+    try:
+        loop = asyncio.get_event_loop()
+        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=False))
+        song = data['url']
+        player = discord.FFmpegOpusAudio(song, **ffmpeg_options)
+        voice_clients[ctx.guild.id].play(player)
+        #get video title
+        
+        info_dict = ytdl.extract_info(url, download=False)
+        video_title = info_dict.get('title', None)
+        await ctx.channel.send("Playing " + "`" + video_title + "`")
+        
+    except Exception as e:
+        print(e)
+
+@bot.hybrid_command()
+async def pause(ctx: commands.Context):
+    try:
+        voice_clients[ctx.guild.id].pause()
+        await ctx.channel.send("Music Paused")
+    except Exception as e:
+        print(e)
+
+@bot.hybrid_command()
+async def resume(ctx: commands.Context):
+    try:
+        voice_clients[ctx.guild.id].resume()
+        await ctx.channel.send("Music Resumed :D")
+    except Exception as e:
+        print(e)
+
+@bot.hybrid_command()
+async def stop(ctx: commands.Context):
+    try:
+        voice_clients[ctx.guild.id].stop()
+        await ctx.channel.send("Music Stopped :<")
+    except Exception as e:
+        print(e)
+
+@bot.hybrid_command()
+async def join(ctx: commands.Context):
+    try:
+        voice_client = await ctx.author.voice.channel.connect()
+        voice_clients[voice_client.guild.id] = voice_client
+        await ctx.channel.send("hello :D")
+        await ctx.channel.send(emojis[0])
+        await ctx.author.voice.channel.connect()
+    except Exception as e:
+        print(e)
+
+@bot.hybrid_command()
+async def leave(ctx: commands.Context):
+    try:    
+        await voice_clients[ctx.guild.id].disconnect()
+        await ctx.channel.send("leaving vc, byebye")
+    except Exception as e:
+        print(e)
+        
+#endregion
+
 @bot.event
 async def on_message(message=discord.message.Message):
     if message.author == bot.user:
         return
     
+    if message.content == "fusebot" or message.content == "Fusebot":
+        await message.channel.send('hello im fusebot :D')
+        await message.channel.send(emojis[0])
+
     if message.content.startswith('fusebot help'):
         await message.channel.send('hi im fusebot :D')
         await message.channel.send('command list:')
@@ -85,76 +160,6 @@ async def on_message(message=discord.message.Message):
     if message.content.startswith('test'):
         await message.channel.send(people_sleeping_cache)
 	
-    #endregion
-
-    #region music playing stuff
-
-    if message.content.startswith("?play"):
-        try:
-            voice_client = await message.author.voice.channel.connect()
-            voice_clients[voice_client.guild.id] = voice_client
-        except Exception as e:
-            print(e)
-
-        try:
-            url = message.content.split()[1]
-
-            loop = asyncio.get_event_loop()
-            data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=False))
-
-            song = data['url']
-            player = discord.FFmpegOpusAudio(song, **ffmpeg_options)
-
-            voice_clients[message.guild.id].play(player)
-
-            #get video title
-            
-            info_dict = ytdl.extract_info(url, download=False)
-            video_title = info_dict.get('title', None)
-
-            await message.channel.send("Playing " + "`" + video_title + "`")
-            
-        except Exception as e:
-            print(e)
-
-    if message.content.startswith("?pause"):
-        try:
-            voice_clients[message.guild.id].pause()
-            await message.channel.send("Music Paused")
-        except Exception as e:
-            print(e)
-
-    if message.content.startswith("?resume"):
-        try:
-            voice_clients[message.guild.id].resume()
-            await message.channel.send("Music Resumed :D")
-        except Exception as e:
-            print(e)
-
-    if message.content.startswith("?stop"):
-        try:
-            voice_clients[message.guild.id].stop()
-            await message.channel.send("Music Stopped :<")
-        except Exception as e:
-            print(e)
-
-    if message.content.startswith("?join"):
-        try:
-            voice_client = await message.author.voice.channel.connect()
-            voice_clients[voice_client.guild.id] = voice_client
-            await message.channel.send("hello :D")
-            await message.channel.send(emojis[0])
-            await message.author.voice.channel.connect()
-        except Exception as e:
-            print(e)
-
-    if message.content.startswith("?leave"):
-        try:    
-            await voice_clients[message.guild.id].disconnect()
-            await message.channel.send("leaving vc, byebye")
-        except Exception as e:
-            print(e)
-
     #endregion
 
 	# other random stuff
